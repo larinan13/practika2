@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Викторина на Bootstrap</title>
+  <!-- Подключение Bootstrap 5 CSS через CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    .quiz-container { max-width: 600px; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="container quiz-container my-5">
+    <!-- Карточка викторины -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white text-center py-3">
+        <h1 class="h4 mb-0">Техника безопасности на рабочем месте</h1>
+      </div>
+      
+      <div class="card-body p-4">
+        <div class="progress mb-4" style="height: 10px;">
+  <div id="quiz-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+</div>
+        <!-- Блок вопроса -->
+        <div id="quiz-box">
+          <div class="d-flex justify-content-between text-muted small mb-3">
+            <span id="progress-text">Вопрос 1 из 10</span>
+            <span id="score-text">Очки: 0</span>
+          </div>
+          <h5 class="card-title mb-4" id="question-text">Загрузка вопроса...</h5>
+          
+          <!-- Варианты ответов -->
+          <div class="d-grid gap-2" id="answers-block">
+            <!-- Кнопки ответов будут генерироваться через JS -->
+          </div>
+        </div>
+
+        <!-- Блок результатов (скрыт по умолчанию) -->
+        <div id="result-box" class="text-center d-none">
+          <h2 class="h3 mb-3">Викторина завершена! 🎉</h2>
+          <p class="lead mb-4" id="final-result-text">Вы ответили правильно на 0 из 10 вопросов.</p>
+          <button class="btn btn-success btn-lg" onclick="restartQuiz()">Начать заново</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Логика викторины на JavaScript -->
+  <script>
+    const quizData = [
+    {
+      question: "Что необходимо сделать в первую очередь, если вы заметили поврежденную изоляцию или оголенный провод у офисной техники?",
+      answers: ["Попробовать заклеить поврежденное место скотчем или изолентой самостоятельно", "Обесточить прибор (вынуть вилку из розетки) и сообщить о неисправности системному администратору или ответственному лицу", "Продолжить работу, стараясь не касаться поврежденного участка"],
+      correct: 1
+    },
+    {
+      question: "Какое положение монитора на рабочем столе считается наиболее правильным с точки зрения эргономики?",
+      answers: ["Монитор должен находиться как можно выше, чтобы вы смотрели вверх.", "Монитор должен располагаться сбоку от клавиатуры под углом 45 градусов", "Верхний край экрана должен находиться на уровне глаз или чуть ниже, прямо перед вами"],
+      correct: 2
+    },
+    {
+      question: "Что категорически запрещено использовать для эвакуации из офисного здания при срабатывании пожарной сигнализации?",
+      answers: ["Лестничные марши", "Лифты", "Запасные выходы, отмеченные зелеными табличками"],
+      correct: 1
+    },
+    {
+      question: "Какое из перечисленных действий помогает предотвратить падения и травмы в офисном пространстве?",
+      answers: ["Своевременное устранение препятствий (коробок, проводов) в проходах", "Быстрая ходьба или бег по коридорам для экономии времени", "Использование открытых ящиков стола в качестве подставки для ног"],
+      correct: 0
+    },
+    {
+      question: "Как правильно поднять с пола тяжелую упаковку бумаги для принтера?",
+      answers: ["Наклониться к коробке, не сгибая коленей", "Присесть с прямой спиной, обхватить груз и подняться, используя силу ног", "Поднять коробку резким рывком"],
+      correct: 1
+    },
+    {
+      question: "Можно ли тушить водой загоревшийся компьютер или принтер, который включен в сеть?",
+      answers: ["Нет, это категорически запрещено", "Да, если воды немного", "Да, но только если пламя очень сильное"],
+      correct: 0
+    },
+    {
+      question: "Какая рекомендуемая периодичность перерывов для отдыха глаз и разминки при постоянной работе за компьютером?",
+      answers: ["Небольшие перерывы по 5-10 минут каждый час работы", "Один большой перерыв на обед (45-60 минут) в середине дня", "Перерывы не нужны, если вы не чувствуете усталости"],
+      correct: 0
+    },
+    {
+      question: "Что необходимо сделать, если вы получили даже незначительную травму (например, глубокий порез бумагой) на рабочем месте?",
+      answers: ["Скрыть этот факт, чтобы не портить статистику отдела", "Обработать рану средствами из офисной аптечки и уведомить своего руководителя", "Сразу вызвать скорую помощь, не предпринимая никаких действий"],
+      correct: 1
+    },
+    {
+      question: "Какое правило безопасности следует соблюдать при работе с офисным шредером (уничтожителем бумаги)?",
+      answers: ["Придерживать бумагу руками как можно ближе к ножам", "Пытаться уничтожить сразу пачку из 50 листов", "Следить, чтобы в приемное отверстие не попали галстук, длинные волосы или украшения"],
+      correct: 2
+    },
+    {
+      question: "Каким должно быть освещение на рабочем месте в офисе?",
+      answers: ["Максимально ярким, направленным прямо на лицо сотрудника", "Равномерным, достаточным и не создающим бликов на экране монитора", "Освещение не имеет значения, если монитор светится ярко"],
+      correct: 1
+    }
+  ];
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+
+  const questionElement = document.getElementById("question-text");
+  const answersBlock = document.getElementById("answers-block");
+  const progressText = document.getElementById("progress-text");
+  const scoreText = document.getElementById("score-text");
+  const quizBox = document.getElementById("quiz-box");
+  const resultBox = document.getElementById("result-box");
+  const finalResultText = document.getElementById("final-result-text");
+  
+  // Новая переменная для полосы прогресса
+  const progressBar = document.getElementById("quiz-progress-bar");
+
+  function loadQuestion() {
+    const currentQuiz = quizData[currentQuestionIndex];
+    
+    // Вычисляем процент прохождения викторины
+    const progressPercent = (currentQuestionIndex / quizData.length) * 100;
+    // Обновляем стили и атрибуты прогресс-бара Bootstrap
+    progressBar.style.width = `${progressPercent}%`;
+    progressBar.setAttribute("aria-valuenow", progressPercent);
+
+    questionElement.innerText = currentQuiz.question;
+    progressText.innerText = `Вопрос ${currentQuestionIndex + 1} из ${quizData.length}`;
+    scoreText.innerText = `Очки: ${score}`;
+    answersBlock.innerHTML = "";
+    
+    currentQuiz.answers.forEach((answer, index) => {
+      const button = document.createElement("button");
+      button.innerText = answer;
+      button.className = "btn btn-light border text-start p-3";
+      button.onclick = () => checkAnswer(index, button);
+      answersBlock.appendChild(button);
+    });
+  }
+
+  function checkAnswer(selectedIndex, clickedButton) {
+    const correctIndex = quizData[currentQuestionIndex].correct;
+    const buttons = answersBlock.querySelectorAll("button");
+
+    buttons.forEach(btn => btn.disabled = true);
+
+    if (selectedIndex === correctIndex) {
+      score++;
+      clickedButton.className = "btn btn-success text-white text-start p-3";
+    } else {
+      clickedButton.className = "btn btn-danger text-white text-start p-3";
+      buttons[correctIndex].className = "btn btn-success text-white text-start p-3";
+    }
+
+    scoreText.innerText = `Очки: ${score}`;
+
+    setTimeout(() => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < quizData.length) {
+        loadQuestion();
+      } else {
+        // Перед показом результатов заполняем полосу до 100%
+        progressBar.style.width = "100%";
+        showResults();
+      }
+    }, 1500);
+  }
+
+  function showResults() {
+    quizBox.classList.add("d-none");
+    resultBox.classList.remove("d-none");
+    finalResultText.innerText = `Вы ответили правильно на ${score} из ${quizData.length} вопросов.`;
+  }
+
+  function restartQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    resultBox.classList.add("d-none");
+    quizBox.classList.remove("d-none");
+    loadQuestion();
+  }
+
+  loadQuestion();
+  </script>
+</body>
+</html>
